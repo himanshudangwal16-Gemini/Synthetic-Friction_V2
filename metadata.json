@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Synthetic Friction Threat Model",
+  "description": "AI-powered cybersecurity resilience tool simulating role-based cognitive vulnerability, stress loads, and workflow friction to prevent social engineering.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
