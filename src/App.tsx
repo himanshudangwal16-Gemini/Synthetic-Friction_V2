@@ -4,12 +4,15 @@
  */
 
 import React, { useState } from "react";
-import { ShieldAlert, AlertTriangle, FileText, Lock, FileDown, ShieldCheck, Printer, ArrowRight, HelpCircle, Eye, Info, RefreshCw } from "lucide-react";
+import { ShieldAlert, AlertTriangle, FileText, Lock, FileDown, ShieldCheck, Printer, ArrowRight, HelpCircle, Eye, Info, RefreshCw, Grid, Cpu, Globe, Calculator } from "lucide-react";
 import OrgConfigPanel from "./components/OrgConfigPanel";
 import VulnerabilityMapGrid from "./components/VulnerabilityMapGrid";
 import PersonaListView from "./components/PersonaListView";
 import ThreatSimulator from "./components/ThreatSimulator";
 import FrictionPatchesInfo from "./components/FrictionPatchesInfo";
+import EnterpriseRiskProfiler from "./components/EnterpriseRiskProfiler";
+import FinancialCalculator from "./components/FinancialCalculator";
+import EnterprisePolicyGenerator from "./components/EnterprisePolicyGenerator";
 import { OrgProfile, ThreatModelData } from "./types";
 
 // High-fidelity preloaded default model data (representing Vanguard Wealth Partners)
@@ -99,6 +102,7 @@ export default function App() {
   const [modelData, setModelData] = useState<ThreatModelData | null>(DEFAULT_PRELOAD);
   const [generating, setGenerating] = useState<boolean>(false);
   const [errorText, setErrorText] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<"mapping" | "simulator" | "enterprise" | "roi" | "policy">("mapping");
 
   const handleGenerateModel = async (profile: OrgProfile) => {
     setGenerating(true);
@@ -309,17 +313,109 @@ export default function App() {
 
                 </div>
 
-                {/* Heatmap Grid Coordinate Matrix */}
-                <VulnerabilityMapGrid cells={modelData.vulnerabilityMap} />
+                {/* Enterprise Dashboard Navigation Tabs */}
+                <div className="border-b border-white/10 flex items-center overflow-x-auto flex-nowrap gap-1.5 pb-px mb-6 scrollbar-none scroll-smooth shrink-0 print:hidden" id="enterprise-tab-bar">
+                  <button
+                    onClick={() => setActiveTab("mapping")}
+                    className={`flex items-center gap-2 px-4 py-3 text-xs font-bold leading-none uppercase tracking-wider transition-all border-b-2 cursor-pointer shrink-0 ${
+                      activeTab === "mapping"
+                        ? "border-indigo-500 text-indigo-400 bg-indigo-500/5 font-extrabold"
+                        : "border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5"
+                    }`}
+                    id="tab-mapping"
+                  >
+                    <Grid className="w-3.5 h-3.5" />
+                    <span>Cognitive Mapping</span>
+                  </button>
 
-                {/* Human Behavior Target Personas Selector */}
-                <PersonaListView personas={modelData.personas} />
+                  <button
+                    onClick={() => setActiveTab("simulator")}
+                    className={`flex items-center gap-2 px-4 py-3 text-xs font-bold leading-none uppercase tracking-wider transition-all border-b-2 cursor-pointer shrink-0 ${
+                      activeTab === "simulator"
+                        ? "border-indigo-500 text-indigo-400 bg-indigo-500/5 font-extrabold"
+                        : "border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5"
+                    }`}
+                    id="tab-simulator"
+                  >
+                    <Cpu className="w-3.5 h-3.5" />
+                    <span>Threat Simulator</span>
+                  </button>
 
-                {/* Cognitive Friction Patches Dictionary */}
-                <FrictionPatchesInfo />
+                  <button
+                    onClick={() => setActiveTab("enterprise")}
+                    className={`flex items-center gap-2 px-4 py-3 text-xs font-bold leading-none uppercase tracking-wider transition-all border-b-2 cursor-pointer shrink-0 ${
+                      activeTab === "enterprise"
+                        ? "border-indigo-500 text-indigo-400 bg-indigo-500/5 font-extrabold"
+                        : "border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5"
+                    }`}
+                    id="tab-enterprise"
+                  >
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>MNC Risk Profiler</span>
+                  </button>
 
-                {/* Active Threat Simulator suite (interactive simulations) */}
-                <ThreatSimulator personas={modelData.personas} />
+                  <button
+                    onClick={() => setActiveTab("roi")}
+                    className={`flex items-center gap-2 px-4 py-3 text-xs font-bold leading-none uppercase tracking-wider transition-all border-b-2 cursor-pointer shrink-0 ${
+                      activeTab === "roi"
+                        ? "border-indigo-505 text-indigo-400 bg-indigo-500/5 font-extrabold"
+                        : "border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5"
+                    }`}
+                    id="tab-roi"
+                  >
+                    <Calculator className="w-3.5 h-3.5" />
+                    <span>Cognitive ROI</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab("policy")}
+                    className={`flex items-center gap-2 px-4 py-3 text-xs font-bold leading-none uppercase tracking-wider transition-all border-b-2 cursor-pointer shrink-0 ${
+                      activeTab === "policy"
+                        ? "border-indigo-505 text-indigo-400 bg-indigo-500/5 font-extrabold"
+                        : "border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5"
+                    }`}
+                    id="tab-policy"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>AI Compliance Policy</span>
+                  </button>
+                </div>
+
+                {/* Tab content frames */}
+                <div id="tab-content-container">
+                  {/* Print optimization: render all critical specs on print, but respect activeTab for normal interactive views */}
+                  {(activeTab === "mapping" || window.matchMedia("print").matches) && (
+                    <div className="space-y-6 print:space-y-8" id="mapping-view">
+                      <VulnerabilityMapGrid cells={modelData.vulnerabilityMap} />
+                      <PersonaListView personas={modelData.personas} />
+                      <FrictionPatchesInfo />
+                    </div>
+                  )}
+
+                  {(activeTab === "simulator" && !window.matchMedia("print").matches) && (
+                    <div id="simulator-view">
+                      <ThreatSimulator personas={modelData.personas} />
+                    </div>
+                  )}
+
+                  {(activeTab === "enterprise" && !window.matchMedia("print").matches) && (
+                    <div id="enterprise-view">
+                      <EnterpriseRiskProfiler modelData={modelData} />
+                    </div>
+                  )}
+
+                  {(activeTab === "roi" && !window.matchMedia("print").matches) && (
+                    <div id="roi-view">
+                      <FinancialCalculator modelData={modelData} />
+                    </div>
+                  )}
+
+                  {(activeTab === "policy" && !window.matchMedia("print").matches) && (
+                    <div id="policy-view">
+                      <EnterprisePolicyGenerator modelData={modelData} />
+                    </div>
+                  )}
+                </div>
 
               </div>
             ) : (

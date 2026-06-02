@@ -507,6 +507,106 @@ app.post("/api/simulate", async (req, res) => {
   }
 });
 
+// Draft dynamic Enterprise Governance Policies tailored to specific organizations and operational friction hotspots
+app.post("/api/enterprise/policy-draft", async (req, res) => {
+  const { classification, framework, version, modelData } = req.body;
+  
+  if (!modelData) {
+    return res.status(400).json({ error: "Missing organization threat model context." });
+  }
+
+  const company = modelData.orgName || "Apex Enterprises";
+  const industry = modelData.industry || "Technology";
+  const stressPeriod = modelData.stressPeriod || "Quarterly Milestones";
+
+  // Standalone offline high-fidelity policy builder
+  const executeLocalPolicyDraft = () => {
+    const markdown = `# ENTERPRISE SECURITY CONSTITUTIONAL DIRECTIVE
+# COGNITIVE BEHAVIORAL RESILIENCE & FRICTION STANDARD
+
+**Classification:** ${classification || "STRICTLY CONFIDENTIAL"}  
+**Target Organization:** ${company} (${industry})  
+**Regulatory Framework Aligned:** ${framework || "ISO 27001 / SOC 2 Type II"}  
+**Document Tracking ID:** CBRS-${company.toUpperCase().replace(/[^A-Z]/g, "")}-v${version || "1.0.0"}  
+**Authorized Date:** ${new Date().toISOString().split("T")[0]}  
+
+---
+
+## 1.0 EXECUTIVE MISSION STATEMENT
+Analysis of ${company}'s operational profiles indicates systemic exposure to social engineering vectors during high-pressure windows, primarily **"${stressPeriod}"**. Real-time messaging environments, rapid notification thresholds, and administrative authority triggers create cognitive stress. This state triggers task-oriented "tunnel-vision", rendering employees vulnerable to spoofing vectors.
+
+To construct behavioral defenses, this directive institutes **"Synthetic Friction Checks"** into the administrative workflows of ${company}. We enforce procedural guidelines to build cognitive safeguards directly into daily procedures.
+
+## 2.0 ENFORCED FRICTION VECTOR TAXONOMY
+
+### SECTION 2.1 Out-of-Band Dual-Channel Verification Command (CBRS-MFA-2.1)
+- **Applicable Channels:** Instant Messaging (Slack, Teams, WeChat), Email Requests, Third-Party Portal Link exchanges.
+- **Mandate:** Any transactional or structural alteration request (e.g. priority supplier bank detail changes, admin delegation, database exceptions) received over digital messaging platforms MUST be delayed and verified on a distinct, separate physical channel (e.g. telephone or authenticated central directory calling).
+- **Behavioral Objective:** Disrupts the automatic speed loop of incoming instructions, forcing a medium transition that clears the operator's focal tunnel.
+
+### SECTION 2.2 Mandatory Operational Cooldown Delay (CBRS-HOLD-2.2)
+- **Applicable Channels:** Cash Management Systems, Routing Ledgers, and Server Admin override structures.
+- **Mandate:** Workflow changes approved during high-pressure operational cycles include a hard system lock for 10 minutes. Alerts go automatically to security operations. 
+- **Behavioral Objective:** Dissipates "Urgency Bias" by making immediate execution impossible. Security staff gain the time budget to intercept the attacker.
+
+### SECTION 2.3 Collaborative Buddy Authorization Signoff (CBRS-BUDDY-2.3)
+- **Applicable Channels:** High-privilege access grants, certificate issuances, and bulk ledger approvals.
+- **Mandate:** Procedures require dual cryptographic authorizations from two separate employees in independent stress states.
+- **Behavioral Objective:** Diffuses individual stress by sharing the cognitive load with an independent coworker who holds an objective focus.
+
+## 3.0 SYSTEMIC COMPLIANCE & RE-ASSESSMENT AUDITS
+Corporate compliance must track actual operational resilience under simulated high-pressure phishing drills. Compliance teams must audit cognitive friction standards quarterly, reporting findings to the MNC Board of Directors.
+
+---
+*End of Directive. Ratified by ${company} Information Security Committee.*`;
+    return { policyMarkdown: markdown };
+  };
+
+  if (!hasValidKey()) {
+    return res.json(executeLocalPolicyDraft());
+  }
+
+  try {
+    const ai = getGemini();
+    const prompt = `
+      You are an elite corporate policy draft analyst and director of risk governance.
+      Write an authoritative, highly comprehensive corporate security directive establishing "Synthetic Friction Standards" for ${company} (${industry}) to comply with ${framework}.
+      The policy must be customized to map directly to their peak high-stress period: "${stressPeriod}".
+      
+      Customize the policy specifically around these 3 recognized cognitive friction methods:
+      1. Out-of-Band Double verification (for digital messaging requests)
+      2. Mandatory 10-Min Cooldown Delays (for critical wire/financial state overrides under pressure)
+      3. Dual-Signoff Collaboration Check (for critical system/access overrides)
+      
+      You MUST refer directly to ${company} throughout. Mention how the policy addresses the core operational tools they use.
+      Write in an extremely serious, professional, legally-rigorous, and formal board-of-directors governance tone. Use structured markdown formatting with header styles.
+      
+      Respond with valid JSON adhering EXACTLY to this schema structure:
+      {
+        "policyMarkdown": "A complete, beautifully formatted Markdown policy of at least 15-20 detailed paragraphs organized under formal compliance section headers (e.g. 1.0 Executive Mandate, 2.0 Workflow Restrictions, 3.0 Administrative Friction Controls, 4.0 Auditing & Scope)."
+      }
+      Do not include any outer markdown backticks (\`\`\`json). Just the raw parseable JSON enclosing the markdown content in one key.
+    `;
+
+    console.log("Invoking Gemini for dynamic policy draft generator...");
+    const response = await ai.models.generateContent({
+      model: "gemini-3.5-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        temperature: 0.3
+      }
+    });
+
+    const parsedJson = JSON.parse(response.text.trim());
+    return res.json(parsedJson);
+
+  } catch (error: any) {
+    console.log("[SYS] Staging offline policy generator due to credential delegation: " + error.message);
+    return res.json(executeLocalPolicyDraft());
+  }
+});
+
 // Serve Vite dev server or static distribution files
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
